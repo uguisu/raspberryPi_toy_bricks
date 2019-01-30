@@ -3,7 +3,7 @@
 ## About
 This project will use DS18B20(temperature sensor) & LCD1602 work together to build a electronic thermometer.
 
-TODO (GIF)
+Review [Demo.webm](Demo.webm) for final effect.
 
 ## Requires
 - Raspberry Pi 3 B+
@@ -12,7 +12,7 @@ TODO (GIF)
 
 ## Get start
 ### 1) Build circuit
-TODO (Image)
+![circuit](circuit.png)
 
 ### 2) System setting
 You should install DS18B20 as device before run program on Raspberry Pi
