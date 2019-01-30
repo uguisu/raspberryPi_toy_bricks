@@ -12,6 +12,16 @@ Review [Demo.webm](Demo.webm) for final effect.
 
 ## Get start
 ### 1) Build circuit
+|Pi     |Bread Board|DS18B20|LCD1602|
+|------:|----------:|------:|------:|
+|GPIO 7 |G4         |SIG    |       |
+|5V(Any)|5V(Any)    |VCC    |       |
+|GND(Any)|GND(Any)  |GND    |       |
+|SCL    |SCL        |       |SCL    |
+|SDA    |SDA        |       |SDA    |
+|5V(Any)|5V(Any)    |       |VCC    |
+|GND(Any)|GND(Any)  |       |GND    |
+
 ![circuit](circuit.png)
 
 ### 2) System setting
