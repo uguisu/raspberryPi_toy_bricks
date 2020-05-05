@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 from flask import Flask, jsonify
 from waitress import serve
 
-from car_config import laser_gpio_pin_number
+from car_config import *
 
 app = Flask(__name__)
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     prepare()
 
     # start http server
-    serve(app, host="0.0.0.0", port=5000)
+    serve(app, host=app_binding_address, port=app_port)
 
+    # release resource
     final_release()
