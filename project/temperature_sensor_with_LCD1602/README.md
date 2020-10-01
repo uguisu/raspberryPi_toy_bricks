@@ -33,8 +33,10 @@ vi /boot/config.txt
 
 Invite following line at the bottom then _save_&_quit_.
 
+~~dtoverlay=w1-gpio~~
+
 `
-dtoverlay=w1-gpio
+dtoverlay=w1-gpio-pullup,gpiopin=7 # change 7 to your gpio pin number
 `
 
 ### 3) Reboot and verify device
@@ -44,7 +46,7 @@ Reboot Pi, when open the console, type following commands to install DS18B20.
 sudo -i
 modprobe w1-gpio
 modprobe w1-therm
-cd /sys/buw/w1/devices/
+cd /sys/bus/w1/devices/
 ls -l
 ```
 
