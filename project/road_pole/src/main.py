@@ -2,12 +2,16 @@ import RPi.GPIO as GPIO
 import time
 
 
-TRIG = 11
-ECHO = 12
+# pin declare
+PIN_ULTRASONIC_RANGING_TRIG = 11
+PIN_ULTRASONIC_RANGING_ECHO = 12
 PIN_LED_R = 15
 PIN_LED_G = 16
 
+# max distance
 MAX_DISTANCE = 20
+# LED Frequece
+LED_FREQUENCE = 2000
 
 p_R = None
 p_G = None
@@ -27,39 +31,45 @@ def prepare():
     GPIO.setmode(GPIO.BOARD)
 
     # ultrasonic ranging
-    GPIO.setup(TRIG, GPIO.OUT)
-    GPIO.setup(ECHO, GPIO.IN)
+    GPIO.setup(PIN_ULTRASONIC_RANGING_TRIG, GPIO.OUT)
+    GPIO.setup(PIN_ULTRASONIC_RANGING_ECHO, GPIO.IN)
 
     # LED
     GPIO.setup(PIN_LED_R, GPIO.OUT)  # Set pins' mode is output
     GPIO.output(PIN_LED_R, GPIO.HIGH)  # Set pins to high(+3.3V) to off led
     GPIO.setup(PIN_LED_G, GPIO.OUT)  # Set pins' mode is output
     GPIO.output(PIN_LED_G, GPIO.HIGH)  # Set pins to high(+3.3V) to off led
+
     # set Frequece to 2KHz
-    p_R = GPIO.PWM(PIN_LED_R, 2000)
-    p_G = GPIO.PWM(PIN_LED_G, 2000)
+    p_R = GPIO.PWM(PIN_LED_R, LED_FREQUENCE)
+    p_G = GPIO.PWM(PIN_LED_G, LED_FREQUENCE)
     # Initial duty Cycle = 0(leds off)
     p_R.start(0)
     p_G.start(0)
 
 
 def distance():
-    GPIO.output(TRIG, 0)
+    """
+    ultrasonic ranging scan distance
+    """
+    GPIO.output(PIN_ULTRASONIC_RANGING_TRIG, GPIO.LOW)
     time.sleep(0.000002)
 
-    GPIO.output(TRIG, 1)
+    GPIO.output(PIN_ULTRASONIC_RANGING_TRIG, GPIO.HIGH)
     time.sleep(0.00001)
-    GPIO.output(TRIG, 0)
+    GPIO.output(PIN_ULTRASONIC_RANGING_TRIG, GPIO.LOW)
 
-    while GPIO.input(ECHO) == 0:
-        a = 0
+    while GPIO.input(PIN_ULTRASONIC_RANGING_ECHO) == GPIO.LOW:
+        # wait until input changes
+        pass
     time1 = time.time()
-    while GPIO.input(ECHO) == 1:
-        a = 1
+
+    while GPIO.input(PIN_ULTRASONIC_RANGING_ECHO) == GPIO.HIGH:
+        # wait until input changes
+        pass
     time2 = time.time()
 
-    during = time2 - time1
-    return during * 340 / 2 * 100
+    return (time2 - time1) * 340 / 2 * 100
 
 
 def set_color(col):
