@@ -7,6 +7,9 @@ PIN_ULTRASONIC_RANGING_TRIG = 11
 PIN_ULTRASONIC_RANGING_ECHO = 12
 PIN_LED_R = 15
 PIN_LED_G = 16
+PIN_BUZZER = 18
+
+last_status = None
 
 # max distance
 MAX_DISTANCE = 20
@@ -19,13 +22,18 @@ p_G = None
 LED_RED = 0xFF00
 LED_GREEN = 0x00FF
 
+# parking gate sound
+Buzz = None
+PARKING_GATE = [294, 350]
+PARKING_GATE_BEAT = [1, 1]
+
 
 def prepare():
     """
     prepare & init
     """
 
-    global p_R, p_G
+    global p_R, p_G, Buzz
 
     # Numbers GPIOs by physical location
     GPIO.setmode(GPIO.BOARD)
@@ -46,6 +54,10 @@ def prepare():
     # Initial duty Cycle = 0(leds off)
     p_R.start(0)
     p_G.start(0)
+
+    # parking gate
+    GPIO.setup(PIN_BUZZER, GPIO.OUT)
+    Buzz = GPIO.PWM(PIN_BUZZER, 440)  # 440 is initial frequency.
 
 
 def distance():
@@ -92,16 +104,54 @@ def set_color(col):
     p_G.ChangeDutyCycle(G_val)
 
 
+def parking_gate_sound(is_up=True):
+
+    # Start Buzzer pin with 50% duty ration
+    Buzz.start(50)
+
+    local_range = None
+    if is_up:
+        local_range = range(0, len(PARKING_GATE))
+    else:
+        local_range = range(len(PARKING_GATE) - 1, -1, -1)
+
+    for i in local_range:
+        # Change the frequency along the song note
+        Buzz.ChangeFrequency(PARKING_GATE[i])
+        # delay a note for beat * 0.5s
+        time.sleep(PARKING_GATE_BEAT[i] * 0.5)
+    # Stop the buzzer
+    Buzz.stop()
+
+
 def loop():
+
+    global last_status
+
     while True:
         dis = distance()
         # print(dis, 'cm\n')
         if dis <= MAX_DISTANCE:
             # print('open....')
             set_color(LED_GREEN)
+
+            if last_status is None or 0 == last_status:
+                pass
+            else:
+                parking_gate_sound()
+
+            last_status = 0
         else:
             # print('close...')
             set_color(LED_RED)
+
+            if last_status is None or 1 == last_status:
+                pass
+            else:
+                parking_gate_sound(is_up=False)
+
+            last_status = 1
+
         time.sleep(0.3)
 
 
@@ -113,7 +163,7 @@ def final_release():
         # Release resource
         GPIO.cleanup()
 
-    global p_R, p_G
+    global p_R, p_G, Buzz
 
     print('final release')
 
@@ -123,6 +173,12 @@ def final_release():
     # Turn off all leds
     GPIO.output(PIN_LED_R, GPIO.HIGH)
     GPIO.output(PIN_LED_G, GPIO.HIGH)
+
+    # parking gate
+    # Stop the buzzer
+    Buzz.stop()
+    # Set Buzzer pin to High
+    GPIO.output(PIN_BUZZER, GPIO.HIGH)
 
     release_sensor()
 
