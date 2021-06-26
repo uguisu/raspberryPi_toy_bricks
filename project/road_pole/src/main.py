@@ -8,6 +8,7 @@ PIN_ULTRASONIC_RANGING_ECHO = 12
 PIN_LED_R = 15
 PIN_LED_G = 16
 PIN_BUZZER = 18
+PIN_SG90 = 8
 
 last_status = None
 
@@ -25,7 +26,11 @@ LED_GREEN = 0x00FF
 # parking gate sound
 Buzz = None
 PARKING_GATE = [294, 350]
-PARKING_GATE_BEAT = [1, 1]
+PARKING_GATE_BEAT = [0.5, 0.5]
+
+# SG90
+SG90_PWM = None
+SG90_FREQUENCE = 50
 
 
 def prepare():
@@ -33,7 +38,7 @@ def prepare():
     prepare & init
     """
 
-    global p_R, p_G, Buzz
+    global p_R, p_G, Buzz, SG90_PWM
 
     # Numbers GPIOs by physical location
     GPIO.setmode(GPIO.BOARD)
@@ -57,7 +62,13 @@ def prepare():
 
     # parking gate
     GPIO.setup(PIN_BUZZER, GPIO.OUT)
-    Buzz = GPIO.PWM(PIN_BUZZER, 440)  # 440 is initial frequency.
+    # 440 is initial frequency.
+    Buzz = GPIO.PWM(PIN_BUZZER, 440)
+
+    # SG90
+    GPIO.setup(PIN_SG90, GPIO.OUT)
+    SG90_PWM = GPIO.PWM(PIN_SG90, SG90_FREQUENCE)
+    SG90_PWM.start(0)
 
 
 def distance():
@@ -124,6 +135,21 @@ def parking_gate_sound(is_up=True):
     Buzz.stop()
 
 
+def sg_90_turn(angle):
+    """
+    angle from 0 to 180
+    """
+
+    global SG90_PWM
+
+    SG90_PWM.ChangeDutyCycle(2.5 + angle / 360 * 20)
+    # wait 20ms until SG90 9G Servo stopped
+    time.sleep(0.02)
+    # clean signal
+    # IMPORTANT: this will prevent SG90 9G Servo jitter
+    SG90_PWM.ChangeDutyCycle(0)
+
+
 def loop():
 
     global last_status
@@ -139,6 +165,7 @@ def loop():
                 pass
             else:
                 parking_gate_sound()
+                sg_90_turn(90)
 
             last_status = 0
         else:
@@ -149,6 +176,7 @@ def loop():
                 pass
             else:
                 parking_gate_sound(is_up=False)
+                sg_90_turn(0)
 
             last_status = 1
 
@@ -163,7 +191,7 @@ def final_release():
         # Release resource
         GPIO.cleanup()
 
-    global p_R, p_G, Buzz
+    global p_R, p_G, Buzz, SG90_PWM
 
     print('final release')
 
@@ -179,6 +207,10 @@ def final_release():
     Buzz.stop()
     # Set Buzzer pin to High
     GPIO.output(PIN_BUZZER, GPIO.HIGH)
+
+    # sg 90
+    SG90_PWM.ChangeDutyCycle(0)
+    SG90_PWM.stop()
 
     release_sensor()
 
