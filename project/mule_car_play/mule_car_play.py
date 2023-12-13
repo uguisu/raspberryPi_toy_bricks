@@ -52,6 +52,17 @@ servo_9 = servo.Servo(pca.channels[9])
 actuation_range = 180
 servo_9.actuation_range = actuation_range
 
+# 摄像头左右
+servo_8 = servo.Servo(pca.channels[8])
+actuation_range = 180
+servo_8.actuation_range = actuation_range
+# 向右修正45度
+servo_8_fix = 45
+# 真实角度
+servo_8_max = 135
+servo_8_min = 45
+
+
 def on_trigger_r_pressed(axis):
     """
     Electronic accelerator
@@ -72,7 +83,8 @@ def on_trigger_l_pressed(axis):
 
 def on_button_pressed(button):
     # print('Button {0} was pressed'.format(button.name))
-    pass
+    servo_9.angle = 90
+    servo_8.angle = 90 + servo_8_fix
 
 
 def on_button_released(button):
@@ -106,14 +118,26 @@ def on_axis_r_moved(axis):
         servo_9.angle = 90
 
 
+    if axis.x == 0:
+        target_angle = 90
+    else:
+        target_angle = round(90 * (1 - axis.x)) - servo_8_fix
+        if target_angle > servo_8_max:
+            target_angle = servo_8_max
+        if target_angle < servo_8_min:
+            target_angle = servo_8_min
+    
+    servo_8.angle = target_angle + servo_8_fix
+
+
 def start_control():
     """
     start control
     """
     try:
         with Xbox360Controller(0, axis_threshold=0.2) as controller:
-            # Button A events
-            # controller.button_a.when_pressed = on_button_pressed
+            # Button X events
+            controller.button_a.when_pressed = on_button_pressed
             # controller.button_a.when_released = on_button_released
 
             controller.trigger_r.when_moved = on_trigger_r_pressed
@@ -129,6 +153,10 @@ def start_control():
 
 
 if __name__ == '__main__':
+
+    # init
+    servo_9.angle = 90
+    servo_8.angle = 90 + servo_8_fix
 
     try:
         start_control()
