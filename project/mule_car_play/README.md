@@ -62,6 +62,12 @@ make
 sudo make install
 ```
 
+Change `LD_LIBRARY_PATH`
+```sh
+vi ~/.bashrc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/myWork/mjpg-streamer/mjpg-streamer-experimental
+```
+
 Start service
 ```sh
 ./mjpg_streamer -i "input_uvc.so -d /dev/video0 -r 640x480 -f 30" -o "output_http.so -w www"
