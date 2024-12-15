@@ -1,3 +1,4 @@
+# Road pole robot: Little 7
 import RPi.GPIO as GPIO
 import time
 
