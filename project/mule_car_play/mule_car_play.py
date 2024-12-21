@@ -51,13 +51,14 @@ motor_7: PWMChannel = pca.channels[7]
 servo_9 = servo.Servo(pca.channels[9])
 actuation_range = 180
 servo_9.actuation_range = actuation_range
+servo_9_fix_angle = 30
 
 # 摄像头左右
 servo_8 = servo.Servo(pca.channels[8])
 actuation_range = 180
 servo_8.actuation_range = actuation_range
 # 向右修正45度
-servo_8_fix = 45
+servo_8_fix = 35
 # 真实角度
 servo_8_max = 135
 servo_8_min = 45
@@ -77,13 +78,14 @@ def on_trigger_r_pressed(axis):
 
 
 def on_trigger_l_pressed(axis):
+    # TODO How to reverse
     pass
 
 
 
-def on_button_pressed(button):
+def on_button_a_pressed(button):
     # print('Button {0} was pressed'.format(button.name))
-    servo_9.angle = 90
+    servo_9.angle = 90 - servo_9_fix_angle
     servo_8.angle = 90 + servo_8_fix
 
 
@@ -115,7 +117,7 @@ def on_axis_r_moved(axis):
         servo_9.angle = round((axis.y  + 1) * 90)
 
     if axis.y >= 0:
-        servo_9.angle = 90
+        servo_9.angle = 90 - servo_9_fix_angle
 
 
     if axis.x == 0:
@@ -136,8 +138,8 @@ def start_control():
     """
     try:
         with Xbox360Controller(0, axis_threshold=0.2) as controller:
-            # Button X events
-            controller.button_a.when_pressed = on_button_pressed
+            # Button A events
+            controller.button_a.when_pressed = on_button_a_pressed
             # controller.button_a.when_released = on_button_released
 
             controller.trigger_r.when_moved = on_trigger_r_pressed
